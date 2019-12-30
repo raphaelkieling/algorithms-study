@@ -8,7 +8,7 @@
  */
 
 const state = {
-  grid_size: 60,
+  grid_size: 50,
   /**
    * w = wall
    * g = goal
@@ -16,15 +16,17 @@ const state = {
    * s = sand
    */
   map_def: [
-    ["w", "w", "w", "w", "w", "w", "w", "w", "g"],
-    ["w", "w", "w", "w", "w", "w", "w", "w", "w"],
-    ["w", "w", "w", "w", "w", "w", "s", "w", "w"],
-    ["w", "w", "w", "w", "s", "w", "w", "w", "w"],
-    ["w", "w", "w", "w", "s", "w", "w", "w", "w"],
-    ["w", "s", "w", "w", "s", "s", "w", "w", "w"],
-    ["w", "w", "w", "w", "w", "w", "w", "w", "w"],
-    ["w", "p", "w", "w", "w", "w", "w", "w", "w"],
-    ["w", "w", "w", "w", "w", "w", "w", "w", "w"]
+    ["w", "w", "w", "w", "s", "w", "s", "w", "w", "s", "w", "g"],
+    ["w", "w", "w", "w", "s", "w", "w", "w", "w", "w", "w", "w"],
+    ["w", "w", "w", "w", "w", "w", "s", "w", "w", "w", "w", "w"],
+    ["w", "w", "w", "w", "s", "w", "w", "w", "w", "w", "w", "w"],
+    ["w", "w", "w", "w", "s", "w", "w", "w", "w", "s", "s", "w"],
+    ["w", "s", "w", "w", "s", "s", "w", "w", "w", "w", "w", "w"],
+    ["w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w"],
+    ["w", "w", "w", "w", "w", "w", "w", "w", "s", "w", "s", "s"],
+    ["w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w"],
+    ["w", "w", "p", "w", "w", "w", "w", "w", "w", "w", "w", "w"],
+    ["w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w", "w"]
   ],
   player: [],
   goal: [],
@@ -43,6 +45,7 @@ class Block {
     this.g = 0;
     this.h = 0;
     this.neighbors = [];
+    this.previous = undefined;
     this.selected = false;
   }
 
@@ -109,6 +112,7 @@ function createMap() {
 
       if (type === "p") state.player = block;
       if (type === "g") state.goal = block;
+      if (type === "s") state.closed_set.push(block);
 
       return block;
     });
@@ -129,8 +133,8 @@ function setup() {
   state.map = initNeighbors();
 
   createCanvas(
-    state.map.length * state.grid_size,
-    state.map[0].length * state.grid_size
+    state.map[0].length * state.grid_size,
+    state.map.length * state.grid_size
   );
 
   state.open_set.push(state.player);
@@ -138,6 +142,16 @@ function setup() {
 
 function heuristic(neighbor, end) {
   return dist(neighbor.x, neighbor.y, end.x, end.y);
+}
+
+function drawWay(block) {
+  if (!block.previous) return;
+
+  if (block.type !== "g") {
+    block.selected = true;
+  }
+
+  drawWay(block.previous);
 }
 
 function draw() {
@@ -155,6 +169,10 @@ function draw() {
         winner = index;
       }
     });
+
+    if (state.open_set[winner] === state.goal) {
+      drawWay(state.goal);
+    }
 
     let current = state.open_set[winner];
     state.open_set = state.open_set.filter(a => a !== current);
@@ -177,6 +195,7 @@ function draw() {
 
         block.h = heuristic_value.toFixed(2);
         block.f = f_value.toFixed(2);
+        block.previous = current;
       }
     });
   }
