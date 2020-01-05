@@ -16,8 +16,8 @@ const state = {
    * s = sand
    */
   map_def: [
-    ["w", "w", "w", "w", "s", "w", "s", "w", "w", "s", "w", "g"],
-    ["w", "w", "w", "w", "s", "w", "w", "w", "w", "w", "w", "w"],
+    ["w", "w", "w", "w", "s", "w", "s", "w", "w", "s", "s", "g"],
+    ["w", "w", "w", "w", "s", "w", "w", "w", "w", "w", "w", "s"],
     ["w", "w", "w", "w", "w", "w", "s", "w", "w", "w", "w", "w"],
     ["w", "w", "w", "w", "s", "w", "w", "w", "w", "w", "w", "w"],
     ["w", "w", "w", "w", "s", "w", "w", "w", "w", "s", "s", "w"],
@@ -32,7 +32,10 @@ const state = {
   goal: [],
   open_set: [],
   closed_set: [],
-  map: []
+  map: [],
+  debug: {
+    text: true
+  }
 };
 
 class Block {
@@ -56,6 +59,13 @@ class Block {
     if (y > 0) this.neighbors.push(map[y - 1][x]);
     if (x < map[0].length - 1) this.neighbors.push(map[y][x + 1]);
     if (x > 0) this.neighbors.push(map[y][x - 1]);
+
+    // diagonal
+    if (y > 0 && x > 0) this.neighbors.push(map[y - 1][x - 1]);
+    if (y < map.length - 1 && x > 0) this.neighbors.push(map[y + 1][x - 1]);
+    if (y > 0 && x < map[0].length - 1) this.neighbors.push(map[y - 1][x + 1]);
+    if (y < map.length - 1 && x < map[0].length - 1)
+      this.neighbors.push(map[y + 1][x + 1]);
   }
 
   draw() {
@@ -67,15 +77,15 @@ class Block {
     else if (this.type === "s") color = [255, 255, 0];
     fill(...color);
     rect(this.x * this.size, this.y * this.size, this.size, this.size);
-    // position text
-    fill(0, 0, 0);
-    const middle_x = this.x * this.size + this.size / 2;
-    const middle_y = this.y * this.size + this.size / 2;
-    text(`[${this.x}, ${this.y}]`, middle_x, middle_y);
-    textSize(9);
-    textAlign(CENTER, CENTER);
 
-    if (true) {
+    if (state.debug.text) {
+      // position text
+      fill(0, 0, 0);
+      const middle_x = this.x * this.size + this.size / 2;
+      const middle_y = this.y * this.size + this.size / 2;
+      text(`[${this.x}, ${this.y}]`, middle_x, middle_y);
+      textSize(9);
+      textAlign(CENTER, CENTER);
       // position g
       fill(0, 0, 0);
       text(
@@ -112,7 +122,6 @@ function createMap() {
 
       if (type === "p") state.player = block;
       if (type === "g") state.goal = block;
-      if (type === "s") state.closed_set.push(block);
 
       return block;
     });
@@ -179,7 +188,7 @@ function draw() {
     state.closed_set.push(current);
 
     current.neighbors.forEach(block => {
-      if (!state.closed_set.includes(block)) {
+      if (!state.closed_set.includes(block) && block.type !== "s") {
         let tempG = current.g + 1;
 
         if (state.open_set.includes(block)) {
