@@ -4,7 +4,10 @@ const state = {
   player: null,
   fruits: [],
   games: [],
-  timer: null
+  timerFruits: null,
+  timer: null,
+  timerSeconds: 0,
+  gravityForce: 1
 };
 
 class Player {
@@ -26,22 +29,19 @@ class Player {
     fill("red");
     text(this.lifes, 20, 40);
 
-    fill("blue");
+    fill("black");
     rect(this.x, this.y, this.w, this.h);
   }
 
   onHitFruit() {
     this.score += 1;
-    if (this.score > 5) {
-      newGame();
-      state.games.push(this.score);
-    }
   }
 
   loseLife() {
     this.lifes -= 1;
     if (this.lifes < 0) {
       newGame();
+      state.games.push(this.score);
     }
   }
 }
@@ -55,7 +55,7 @@ class Fruit {
   }
 
   draw() {
-    fill("red");
+    fill("black");
     noStroke();
     rect(this.x, this.y, this.w, this.h);
   }
@@ -63,12 +63,22 @@ class Fruit {
 
 function newGame() {
   state.player = new Player(state.w / 2 - 50, state.h - 40);
+  if (state.timerFruits) {
+    clearInterval(state.timerFruits);
+  }
+
   if (state.timer) {
     clearInterval(state.timer);
   }
 
   state.fruits = [];
+  state.timerSeconds = 0;
+  state.gravityForce = 1;
   state.timer = setInterval(() => {
+    state.timerSeconds += 1;
+    state.gravityForce += 0.1;
+  }, 1000);
+  state.timerFruits = setInterval(() => {
     const fruit = new Fruit(random(0, state.w), -10);
     state.fruits.push(fruit);
   }, 1000);
@@ -83,6 +93,10 @@ function draw() {
   createCanvas(w, h);
   stroke(1);
   rect(0, 0, w, h);
+
+  noStroke();
+  fill("black");
+  text(state.timerSeconds, 20, 60);
 
   // player
   if (keyIsDown(LEFT_ARROW)) {
@@ -111,7 +125,7 @@ function draw() {
         delete state.fruits[i];
         player.loseLife();
       }
-      element.y += 1;
+      element.y += state.gravityForce;
       element.draw();
     }
   }
