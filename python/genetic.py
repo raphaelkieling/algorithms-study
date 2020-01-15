@@ -18,10 +18,8 @@ https://miro.medium.com/max/685/0*k7bVZC3sTjw_pdrt.jpg
 
 import numpy
 import random
-import pygame
 
-words = "the best way"
-screen = pygame.display.set_mode((600,600))
+words = "i love how the code works and that is crazy, because"
 definition = [(0, len(words) - 1) for i in range(len(words))]
 
 def generate_word(definition):
@@ -70,9 +68,8 @@ class Mutation:
             population_coust.sort(key=lambda x: x[1])
             population_elite = population_coust[0:(int(self.population * self.elitist))]
             
-            for k in range(len(population_coust)):
-                if k % 20 == 0:
-                    print('%3s - %s' % (population_coust[k][1], population_coust[k][0]))
+            if i % (self.epochs / 6) == 0 :
+                print('%3s - %s' % (population_coust[0][1], population_coust[0][0]))
                                         
             while len(population_elite) < self.population - 1:
                 subject1 = population_elite[random.randint(0, len(population_elite) - 1)]
@@ -103,8 +100,7 @@ mutator = Mutation(
     definition=definition,
     coust_function=coust,
     words=words,
-    epochs = 30
+    epochs = 300
 )
 
 best = mutator.fit()
-print(best)
