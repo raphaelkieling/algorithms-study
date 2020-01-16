@@ -18,8 +18,9 @@ https://miro.medium.com/max/685/0*k7bVZC3sTjw_pdrt.jpg
 
 import numpy
 import random
+import matplotlib.pyplot as plt
 
-words = "i love how the code works and that is crazy, because"
+words = "My mom is baking cookies this afternoon. We could go to my house and eat some. How does that sound?"
 definition = [(0, len(words) - 1) for i in range(len(words))]
 
 def generate_word(definition):
@@ -46,6 +47,8 @@ class Mutation:
         self.creator_subject= creator_individual
         self.coust_function = coust_function 
         self.words = words
+        self.info_x = []
+        self.info_y = []
         
     def reproduction(self, subject1, subject2):        
         point = random.randint(self.definition[0][0], self.definition[0][1])
@@ -68,8 +71,14 @@ class Mutation:
             population_coust.sort(key=lambda x: x[1])
             population_elite = population_coust[0:(int(self.population * self.elitist))]
             
-            if i % (self.epochs / 6) == 0 :
-                print('%3s - %s' % (population_coust[0][1], population_coust[0][0]))
+            self.info_x.append(i)
+            self.info_y.append(population_coust[0][1])
+
+            plt.grid()
+            axes = plt.gca()
+            axes.set_ylim([0, max(mutator.info_y)])
+            plt.plot(mutator.info_x,mutator.info_y, color='red',linestyle='dashed', fillstyle='full')
+            plt.pause(0.01)
                                         
             while len(population_elite) < self.population - 1:
                 subject1 = population_elite[random.randint(0, len(population_elite) - 1)]
@@ -104,3 +113,7 @@ mutator = Mutation(
 )
 
 best = mutator.fit()
+
+
+print(best)
+plt.show()
